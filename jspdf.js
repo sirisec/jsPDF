@@ -165,8 +165,8 @@ var jsPDF = (function(global) {
    * @constructor
    * @private
    */
-  function jsPDF(orientation, unit, format, compressPdf) {
-    var options = {};
+  function jsPDF(orientation, unit, format, compressPdf, options) {
+    var options = options || {};
 
     if (typeof orientation === 'object') {
       options = orientation;
@@ -221,6 +221,7 @@ var jsPDF = (function(global) {
       },
       API = {},
       events = new PubSub(API),
+      hotfixes = options.hotfixes || [],
 
       /////////////////////
       // Private functions
@@ -1051,7 +1052,13 @@ var jsPDF = (function(global) {
         k = 72;
         break;
       case 'px':
-        k = 96 / 72;
+        //If they have specified the px_conversion hotfix, correct the scale factor, otherwise leave it as it was for now.
+        if (hotfixes.indexOf('px_scaling') > -1) {
+          k = 72 / 96;
+        }
+        else {
+          k = 96 / 72;
+        }
         break;
       case 'pc':
         k = 12;
@@ -1152,7 +1159,8 @@ var jsPDF = (function(global) {
       },
       'getPDFVersion': function() {
         return pdfVersion;
-      }
+      },
+      'hotfixes': hotfixes      //Expose the hotfixes so plugins can also see them.
     };
 
     /**
